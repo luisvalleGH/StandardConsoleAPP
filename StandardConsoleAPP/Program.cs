@@ -1,18 +1,23 @@
-﻿using System;
-using System.IO;
+﻿using Eternet.Mikrotik;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using System;
+using System.IO;
 using Log = Serilog.Log;
 
 namespace StandardConsoleApp
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static ITikConnection GetMikrotikConnection(string host, string user, string pass)
         {
-            if (args == null) throw new ArgumentNullException(nameof(args));
+            var connection = ConnectionFactory.CreateConnection(TikConnectionType.Api);
+            connection.Open(host, user, pass);
+            return connection;
+        }
 
-            // Set up configuration sources.
+        private static ConfigurationClass InitialSetup()
+        {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(AppContext.BaseDirectory))
                 .AddJsonFile("appsettings.json", optional: false);
@@ -25,6 +30,15 @@ namespace StandardConsoleApp
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(cfg)
                 .CreateLogger();
+
+            return mycfg;
+        }
+
+        static void Main(string[] args)
+        {
+            if (args == null) throw new ArgumentNullException(nameof(args));
+
+            var mycfg = InitialSetup();
         }
     }
 }
